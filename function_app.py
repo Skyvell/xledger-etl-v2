@@ -1,7 +1,7 @@
 import logging
 import os
 import azure.functions as func
-from graphql_.extraction import paginate_gql_query, extract_data_deltas_fn, has_next_page_fn, get_last_cursor_fn
+from graphql_.extraction import DeltasExtractor
 from graphql_.client import GraphQLClient
 from graphql_.queries import GET_TIMESHEET_DELTAS
 from utils.data_formatting import flatten_list_of_dicts
@@ -84,20 +84,33 @@ def sync_timesheets(myTimer: func.TimerRequest) -> None:
 
     # Create a GraphQL client.
     gql_client = GraphQLClient(api_endpoint, api_key)
+    delta_extractor = DeltasExtractor(
+        gql_client, 
+        GET_TIMESHEET_DELTAS,
+        {"first": 1000},
+        "timesheet_deltas"
+    )
+
+    deltas = delta_extractor.get_all_deltas()
+    query_result = delta_extractor.get_all_changed_items()
+    query_result.add_key_to_all_nodes("mutationType", "ADDED")
+
+
+    print(json.dumps(flatten_list_of_dicts(query_result.get_nodes()), indent=4))
 
     # Get all the new data since last sync.
-    data = paginate_gql_query(gql_client, GET_TIMESHEET_DELTAS, {"first": 5}, "timesheet_deltas", extract_data_deltas_fn, has_next_page_fn, get_last_cursor_fn)
+    #edges = paginate_gql_query(gql_client, GET_TIMESHEET_DELTAS)
     #print(json.dumps(data, indent=4))
     # If there's no new data, return.
-    if not data:
-        logging.info("No new data since last sync.")
-        return
+    #if not data:
+    #    logging.info("No new data since last sync.")
+    #    return
     
     # Transform data and convert to parquet.
-    flattened_data = flatten_list_of_dicts(data)
-    parquet_data = convert_dicts_to_parquet(flattened_data)
+    #flattened_data = flatten_list_of_dicts(data)
+    #parquet_data = convert_dicts_to_parquet(flattened_data)
 
-    print(json.dumps(flattened_data, indent=4))
+    print(deltas.additions, deltas.updates, deltas.deletions, deltas.last_cursor)
     # Write the data to data lake.
 
 
