@@ -100,7 +100,7 @@ class GraphQLClient:
             logging.error(f"An error occurred: {str(e)}")
             raise GraphQLQueryException(f"An error occurred: {str(e)}")
 
-    def paginate_gql_query(self, query: str, variables: Dict[str, Any], query_name: str) -> PaginationQueryResult:
+    def paginate_gql_query(self, query: str, variables: Dict[str, Any]) -> PaginationQueryResult:
         """
         Fetches all data by paginating over a GraphQL query.
 
@@ -117,6 +117,7 @@ class GraphQLClient:
             try:
                 # Execute the query.
                 result = self.execute_graphql_query(query=query, variables=variables)
+                query_name = next(iter(result))
                 data = result.get(query_name)
                 if not data:
                     raise GraphQLQueryException(f"No data found for query: {query_name}")
@@ -142,7 +143,7 @@ class GraphQLClient:
                 logging.error(f"An error occurred during the GraphQL query execution: {e}")
                 raise GraphQLQueryException(f"An error occurred during the GraphQL query execution: {e}")
 
-        return PaginationQueryResult(edges=all_results, last_cursor=last_cursor)
+        return PaginationQueryResult(edges=all_results)
 
     def __enter__(self):
         """Enable use of 'with' statement."""
