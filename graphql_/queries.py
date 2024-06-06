@@ -121,86 +121,86 @@ MyQuery = gql("""
 """)
 
 
-query MyQuery {
-  employees(first: 10000) {
-    edges {
-      cursor
-      node {
-        code
-        dbId
-        email
-        employmentType {
-          description
-          levelParent {
-            description
-          }
-        }
-        employeeGroup {
-          description
-          code
-        }
-        employmentTo
-        superior {
-          description
-        }
-        contact {
-          country {
-            description
-          }
-          gender {
-            name
-          }
-          name
-          lastName
-          exitReason {
-            description
-          }
-          jobTitle
-        }
-        employmentFrom
-        position {
-          dbId
-          createdAt
-          modifiedAt
-          dateFrom
-          dateTo
-          overtime
-          flextime
-          positionNumber
-          text
-          ownerDbId
-          seniorityDate
-          autoAdjustment
-          employeePositionNumber
-          seniorityAdjustments
-          comment
-          internalInfo
-          employmentComment
-          employeeDbId
-          parttimePct
-          mainPosition
-        }
-      }
-    }
-    pageInfo {
-      hasNextPage
-    }
-  }
-}
-
-query MyQuery {
-  customers(first: 10) {
-    edges {
-      cursor
-      node {
-        email
-        code
-        description
-        dbId
-        company {
-          name
-        }
-      }
-    }
-  }
-}
+##query MyQuery {
+##  employees(first: 10000) {
+##    edges {
+##      cursor
+##      node {
+##        code
+##        dbId
+##        email
+##        employmentType {
+##          description
+##          levelParent {
+##            description
+##          }
+##        }
+##        employeeGroup {
+##          description
+##          code
+##        }
+##        employmentTo
+##        superior {
+##          description
+##        }
+##        contact {
+##          country {
+##            description
+##          }
+##          gender {
+##            name
+##          }
+##          name
+##          lastName
+##          exitReason {
+##            description
+##          }
+##          jobTitle
+##        }
+##        employmentFrom
+##        position {
+##          dbId
+##          createdAt
+##          modifiedAt
+##          dateFrom
+##          dateTo
+##          overtime
+##          flextime
+##          positionNumber
+##          text
+##          ownerDbId
+##          seniorityDate
+##          autoAdjustment
+##          employeePositionNumber
+##          seniorityAdjustments
+##          comment
+##          internalInfo
+##          employmentComment
+##          employeeDbId
+##          parttimePct
+##          mainPosition
+##        }
+##      }
+##    }
+##    pageInfo {
+##      hasNextPage
+##    }
+##  }
+##}
+##
+##query MyQuery {
+##  customers(first: 10) {
+##    edges {
+##      cursor
+##      node {
+##        email
+##        code
+##        description
+##        dbId
+##        company {
+##          name
+##        }
+##      }
+##    }
+##  }
+##}

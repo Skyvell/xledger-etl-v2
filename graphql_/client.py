@@ -18,9 +18,9 @@ class PaginationQueryResult:
         edges (list): The list of edges (data items) returned by the query.
         last_cursor (str): The cursor for the last item fetched, used for pagination.
     """
-    def __init__(self, edges: List[Dict[str, Any]], last_cursor: str) -> None:
+    def __init__(self, edges: List[Dict[str, Any]]) -> None:
         self.edges = edges
-        self.last_cursor = last_cursor
+        self.last_cursor = edges[-1]['cursor'] if edges else None
 
     def get_nodes(self) -> List[Dict[str, Any]]:
         """
@@ -29,6 +29,17 @@ class PaginationQueryResult:
         :return: A list of nodes.
         """
         return [edge['node'] for edge in self.edges]
+    
+    def get_last_cursor(self) -> str:
+        """
+        Returns the cursor for the last item fetched.
+
+        :return: The cursor for the last item.
+        """
+        return self.last_cursor
+    
+    def hasResults(self) -> bool:
+        return len(self.edges) > 0
     
     def add_key_to_all_nodes(self, key: str, value: Any) -> None:
         """
