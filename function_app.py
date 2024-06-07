@@ -3,9 +3,20 @@ import os
 import azure.functions as func
 from graphql_.extraction import DataSyncronizer, DataSyncronizerQueries
 from graphql_.client import GraphQLClient
-from graphql_.queries import GET_TIMESHEET_DELTAS, GET_TIMESHEETS_FROM_DBIDS, GET_CUSTOMER_DELTAS, GET_CUSTOMERS_FROM_DBIDS
+from graphql_.queries import (
+    GET_TIMESHEET_DELTAS, 
+    GET_TIMESHEETS_FROM_DBIDS, 
+    GET_TIMESHEETS_AFTER_CURSOR, 
+    GET_CUSTOMER_DELTAS, 
+    GET_CUSTOMERS_FROM_DBIDS,
+    GET_EMPLOYEE_DELTAS,
+    GET_EMPLOYEES_FROM_DBIDS,
+    GET_EMPLOYEES_AFTER_CURSOR
+)
+
 from utils.data_formatting import flatten_list_of_dicts
 from utils.files import convert_dicts_to_parquet, write_buffer_to_file
+from utils.time import get_current_time_for_filename
 import json
 
 app = func.FunctionApp()
@@ -19,29 +30,45 @@ def sync_timesheets(myTimer: func.TimerRequest) -> None:
     api_endpoint, api_key = os.getenv("Endpoint"), os.getenv("APIKey")
 
     # Create a GraphQL client.
-    #gql_client = GraphQLClient(api_endpoint, api_key)
-    #syncronizer_queries = DataSyncronizerQueries(GET_TIMESHEET_DELTAS, GET_TIMESHEETS_FROM_DBIDS)
-    #syncronizer = DataSyncronizer(SYNCRONIZER_NAME, gql_client, syncronizer_queries)
-   #
-    ## Syncronize the data.
-    #items = syncronizer.get_all_changed_items()
-#
-#
-    #print(json.dumps(flatten_list_of_dicts(items.get_nodes()), indent=4))
-
-
-
-     # Create a GraphQL client.
     gql_client = GraphQLClient(api_endpoint, api_key)
-    syncronizer_queries = DataSyncronizerQueries(GET_CUSTOMER_DELTAS, GET_CUSTOMERS_FROM_DBIDS)
+    syncronizer_queries = DataSyncronizerQueries(GET_TIMESHEET_DELTAS, GET_TIMESHEETS_FROM_DBIDS, GET_TIMESHEETS_AFTER_CURSOR)
+    syncronizer = DataSyncronizer(SYNCRONIZER_NAME, gql_client, syncronizer_queries)
+   
+    # Syncronize the data.
+    items = syncronizer.get_all_items()
+
+
+    print(json.dumps(flatten_list_of_dicts(items.get_nodes()), indent=4))
+
+
+
+    # Create a GraphQL client.
+    gql_client = GraphQLClient(api_endpoint, api_key)
+    syncronizer_queries = DataSyncronizerQueries(GET_CUSTOMER_DELTAS, GET_CUSTOMERS_FROM_DBIDS, "test")
     syncronizer = DataSyncronizer(SYNCRONIZER_NAME, gql_client, syncronizer_queries)
    
     # Syncronize the data.
     items = syncronizer.get_all_changed_items()
+#
+#   print(json.dumps(flatten_list_of_dicts(items.get_nodes()), indent=4))
+    flat = flatten_list_of_dicts(items)
+    parq = convert_dicts_to_parquet(flat)
+    write_buffer_to_file(parq, f"./output/{get_current_time_for_filename()}_customers.parquet")
 
 
-    print(json.dumps(flatten_list_of_dicts(items), indent=4))
-
+    # Create a GraphQL client.
+    gql_client = GraphQLClient(api_endpoint, api_key)
+    syncronizer_queries = DataSyncronizerQueries(GET_EMPLOYEE_DELTAS, GET_EMPLOYEES_FROM_DBIDS, GET_EMPLOYEES_AFTER_CURSOR)
+    syncronizer = DataSyncronizer(SYNCRONIZER_NAME, gql_client, syncronizer_queries)
+   
+    # Syncronize the data.
+    items = syncronizer.get_all_items()
+#
+#
+    print(json.dumps(flatten_list_of_dicts(items.get_nodes()), indent=4))
+    flat = flatten_list_of_dicts(items.get_nodes())
+    parq = convert_dicts_to_parquet(flat)
+    write_buffer_to_file(parq, f"./output/{get_current_time_for_filename()}_employees.parquet")
 
 
 
