@@ -7,10 +7,12 @@ class DataSyncronizerQueries:
     def __init__(
         self,
         deltas_query: str,
-        main_query_by_dbids: str
+        main_query_by_dbids: str,
+        main_query_by_cursor: str
     ) -> None:
         self.deltas_query = deltas_query
         self.main_query_by_dbids = main_query_by_dbids
+        self.main_query_by_cursor = main_query_by_cursor
 
 
 class DeltasResult:
@@ -46,9 +48,30 @@ class DataSyncronizer:
         self.queries = queries
 
         # These should be fetched from configuration manager.
+        # Maybe class for writing to data lake.
         self.deltas_cursor = None
         self.initial_sync_cursor = None
         self.initial_sync_complete = True
+
+        # Variables.
+
+
+    def syncronize_data(self) -> None:
+        if self.initial_sync_complete:
+            changed_items = self.get_all_changed_items()
+            
+            # flatten the data.
+            # write to data lake.
+            # update the deltas_cursor.
+        else:
+            last_syncversion = self.get
+            all_items = self.get_all_items()
+            all_nodes = all_items.get_nodes()
+            # flatten the data.
+            # write to data lake.
+            # update the initial_sync_cursor.
+            # update the initial_sync_complete.
+            #self._syncronize_initial_sync()
 
     def get_all_deltas(self) -> DeltasResult:
         query_result = self.graphql_client.paginate_gql_query(self.queries.deltas_query, {"first": 10000, "after": self.deltas_cursor})
@@ -73,6 +96,11 @@ class DataSyncronizer:
             all_changed_items.append({"dbId": db_id, "mutationType": "DELETED"}) 
 
         return all_changed_items
+    
+    def get_all_items(self) -> PaginationQueryResult:
+        query_results = self.graphql_client.paginate_gql_query(self.queries.main_query_by_cursor, {"first": 10000, "after": self.initial_sync_cursor})
+        query_results.add_key_to_all_nodes("mutationType", "ADDED")
+        return query_results
 
     def _process_changes(self, change_type: str, db_ids: list):
         all_changed_items = []
