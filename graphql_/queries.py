@@ -44,11 +44,52 @@ GET_TIMESHEETS_FROM_DBIDS = gql("""
     }
 """)
 
+GET_TIMESHEETS_AFTER_CURSOR = gql("""
+    query getTimesheets($first: Int, $after: String) {
+        timesheets(
+            first: $first,
+            after: $after
+        ) {
+            edges {
+                node {
+                    dbId
+                    assignmentDate
+                    isHeaderApproved
+                    headerApprovedAt
+                    owner {
+                        description
+                        dbId
+                    }
+                    employee {
+                        code
+                        description
+                        dbId
+                    }
+                    activity {
+                        code
+                        description
+                    }
+                    timeType {
+                        code
+                        description
+                    }
+                    workingHours
+                    assignmentDate
+                }
+            }
+            pageInfo {
+                hasNextPage
+            }
+        }
+    }
+""")
+
 
 GET_TIMESHEET_DELTAS = gql("""
-    query getTimesheetDeltas($first: Int, $after: String) {
+    query getTimesheetDeltas($first: Int, $last: Int, $after: String) {
         timesheet_deltas(
-            first: $first, 
+            first: $first,
+            last: $last, 
             after: $after
         ) {
             edges {
@@ -110,6 +151,124 @@ GET_CUSTOMER_DELTAS = gql("""
         }
     }
 """)
+
+
+GET_EMPLOYEES_FROM_DBIDS = gql("""
+    query getEmployees($first: Int, $after: String, $dbIdList: [ID!]) {
+        employees(
+            first: $first,
+            after: $after,
+            filter: {
+                dbId_in: $dbIdList
+            }
+        ) {
+            edges {
+                cursor
+                node {
+                    email
+                    description
+                    employmentType {
+                        description
+                        owner {
+                            description
+                        }
+                    }
+                    contact {
+                        age
+                        country {
+                            description
+                        }
+                        firstName
+                        lastName
+                        gender {
+                            name
+                        }
+                    }
+                    exitReason {
+                        description
+                        code
+                    }
+                    glObject1 {
+                        id
+                        description
+                    }
+                    code
+                }
+            }
+            pageInfo {
+                hasNextPage
+            }
+        }
+    }
+""")
+
+GET_EMPLOYEES_AFTER_CURSOR = gql("""
+    query getEmployees($first: Int, $after: String) {
+        employees(
+            first: $first,
+            after: $after
+        ) {
+            edges {
+                cursor
+                node {
+                    email
+                    description
+                    employmentType {
+                        description
+                        owner {
+                            description
+                        }
+                    }
+                    contact {
+                        age
+                        country {
+                            description
+                        }
+                        firstName
+                        lastName
+                        gender {
+                            name
+                        }
+                    }
+                    exitReason {
+                        description
+                        code
+                    }
+                    glObject1 {
+                        id
+                        description
+                    }
+                    code
+                }
+            }
+            pageInfo {
+                hasNextPage
+            }
+        }
+    }
+""")
+
+GET_EMPLOYEE_DELTAS = gql("""
+    query getEmployeeDeltas($first: Int, $last: Int, $after: String) {
+        employee_deltas(
+            first: $first,
+            last: $last,
+            after: $after
+        ) {
+            edges {
+                node {
+                    dbId
+                    mutationType
+                }
+            }
+            pageInfo {
+                hasNextPage
+            }
+        }
+    }
+""")
+
+
 
 
 
