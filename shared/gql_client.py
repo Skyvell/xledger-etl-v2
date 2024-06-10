@@ -122,12 +122,10 @@ class GraphQLClient:
                 if not data:
                     raise GraphQLQueryException(f"No data found for query: {query_name}")
 
-                # Append the fetched data.
-                # THIS WILL CAUSE ERROR IF EDGES NULL.
-                all_results.extend(data['edges'])
-
-                # Update the last cursor.
-                if data['edges']:
+                # Extract the edges and last cursor form current page.
+                edges = data.get('edges')
+                if edges:
+                    all_results.extend(data['edges'])
                     last_cursor = data['edges'][-1]['cursor']
 
                 # Check if there is a next page.

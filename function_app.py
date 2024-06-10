@@ -1,9 +1,9 @@
 import logging
 import os
 import azure.functions as func
-from graphql_.extraction import DataSyncronizer, DataSyncronizerQueries
-from graphql_.client import GraphQLClient
-from graphql_.queries import (
+from shared.extraction import DataSyncronizer, DataSyncronizerQueries
+from shared.gql_client import GraphQLClient
+from shared.queries import (
     GET_TIMESHEET_DELTAS, 
     GET_TIMESHEETS_FROM_DBIDS, 
     GET_TIMESHEETS_AFTER_CURSOR, 
@@ -14,12 +14,15 @@ from graphql_.queries import (
     GET_EMPLOYEES_AFTER_CURSOR
 )
 
-from utils.data_formatting import flatten_list_of_dicts
-from utils.files import convert_dicts_to_parquet, write_buffer_to_file
-from utils.time import get_current_time_for_filename
+from shared.utils.data_transformation import flatten_list_of_dicts
+from shared.utils.files import convert_dicts_to_parquet, write_buffer_to_file
+from shared.utils.time import get_current_time_for_filename
 import json
 
+from functions.sync_timesheets.sync_timesheets import bp
+
 app = func.FunctionApp()
+app.register_blueprint(bp)
 
 SYNCRONIZER_NAME = "timesheets"
 
@@ -90,3 +93,25 @@ def sync_timesheets(myTimer: func.TimerRequest) -> None:
     logging.info('Python timer trigger function executed yolo swag.')
 
 
+SYNCRONIZER_NAME = "TEST"
+
+@app.schedule(schedule="0 0 * * * *", arg_name="myTimer", run_on_startup=True,
+              use_monitor=False) 
+def sync_timesheets_2(myTimer: func.TimerRequest) -> None:
+    # Get the environment variables.
+    api_endpoint, api_key = os.getenv("Endpoint"), os.getenv("APIKey")
+
+    # Create a GraphQL client.
+    gql_client = GraphQLClient(api_endpoint, api_key)
+    syncronizer_queries = DataSyncronizerQueries(GET_TIMESHEET_DELTAS, GET_TIMESHEETS_FROM_DBIDS, GET_TIMESHEETS_AFTER_CURSOR)
+    syncronizer = DataSyncronizer(SYNCRONIZER_NAME, gql_client, syncronizer_queries)
+   
+    # Syncronize the data.
+    items = syncronizer.get_last_delta()
+
+
+    print(json.dumps(flatten_list_of_dicts(items), indent=4))
+
+
+
+    logging.info('Python timer trigger function executed yolo swag.')

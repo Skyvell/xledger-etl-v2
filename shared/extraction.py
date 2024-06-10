@@ -1,4 +1,4 @@
-from graphql_.client import GraphQLClient, PaginationQueryResult
+from shared.gql_client import GraphQLClient, PaginationQueryResult
 from typing import Dict, Any
 # This should be removed
 
@@ -51,7 +51,7 @@ class DataSyncronizer:
         # Maybe class for writing to data lake.
         self.deltas_cursor = None
         self.initial_sync_cursor = None
-        self.initial_sync_complete = True
+        self.initial_sync_complete = True # Could be environment variable.
 
         # Variables.
 
@@ -64,7 +64,18 @@ class DataSyncronizer:
             # write to data lake.
             # update the deltas_cursor.
         else:
-            last_syncversion = self.get
+            self.get_all_deltas()
+            # 1. Get the very last deltas cursor.
+            # 2. Get all the data from the initial_sync_cursor.
+            # 3. If data fetch completes until initial_sync_complete:
+                # Set initial_sync_complate flag to true.
+                # Set initial sync cursosr to 0.
+            # 4. Get all deltas after the previously recorded deltas cursor.
+
+
+
+
+            last_syncversion = self.initial_sync_cursor
             all_items = self.get_all_items()
             all_nodes = all_items.get_nodes()
             # flatten the data.
@@ -75,6 +86,11 @@ class DataSyncronizer:
 
     def get_all_deltas(self) -> DeltasResult:
         query_result = self.graphql_client.paginate_gql_query(self.queries.deltas_query, {"first": 10000, "after": self.deltas_cursor})
+        deltas_result = self._extract_all_deltas_from_edges(query_result)
+        return deltas_result
+    
+    def get_last_delta(self) -> DeltasResult:
+        query_result = self.graphql_client.paginate_gql_query(self.queries.deltas_query, {"last": 1})
         deltas_result = self._extract_all_deltas_from_edges(query_result)
         return deltas_result
     
@@ -110,7 +126,7 @@ class DataSyncronizer:
             all_changed_items.extend(query_results.get_nodes())
         return all_changed_items
 
-    def _extract_all_deltas_from_edges(self, result: PaginationQueryResult) -> None:
+    def _extract_all_deltas_from_edges(self, result: PaginationQueryResult) -> DeltasResult:
         additions = set()
         updates = set()
         deletions = set()
