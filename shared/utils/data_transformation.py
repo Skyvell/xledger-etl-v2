@@ -51,3 +51,23 @@ def flatten_list_of_dicts(list_of_dicts: List[Dict[str, Any]], separator: str = 
         flattened_dict = flatten_json(nested_dict, separator)
         flattened_dicts.append(flattened_dict)
     return flattened_dicts
+
+
+def add_key_value_to_dicts(dicts_list: List[Dict[str, Any]], key: str, value: Any) -> List[Dict[str, Any]]:
+    """
+    Adds a key-value pair to each dictionary in the list at the first level.
+
+    :param dicts_list: List of dictionaries to update.
+    :param key: The key to add to each dictionary.
+    :param value: The value to associate with the key.
+    :return: The list of updated dictionaries.
+    """
+    if not isinstance(dicts_list, list):
+        raise ValueError("The first argument must be a list of dictionaries.")
+    
+    for dictionary in dicts_list:
+        if not isinstance(dictionary, dict):
+            raise ValueError("All elements in the list must be dictionaries.")
+        dictionary[key] = value
+
+    return dicts_list
