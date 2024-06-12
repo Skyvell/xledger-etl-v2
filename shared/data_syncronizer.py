@@ -4,6 +4,13 @@ from delta_fetcher import DeltaFetcher
 from item_fetcher import ItemFetcher
 from configuration_manager import ConfigurationManager
 
+
+class ChangedItemsResult:
+    def __init__(self, items: List[Dict[str, Any]], last_deltas_cursor: str):
+        self.items = items
+        self.last_deltas_cursor = last_deltas_cursor
+
+
 # This one will also have a data lake writer class.
 class DataSynchronizer:
     def __init__(self, 
@@ -32,14 +39,14 @@ class DataSynchronizer:
             logging.error(f"Error in synchronization: {e}")
             raise
 
-    def fetch_changed_items(self) -> List[Dict[str, Any]]:
+    def fetch_changed_items(self) -> ChangedItemsResult:
         # Fetch all deltas since last deltas sync cursor.
         deltas_result = self.delta_fetcher.fetch_deltas(
             {"first": 10000, "after": self.config_manager.get('deltas_cursor')})
         
         # If no new changes, return empty list.
         if not deltas_result.has_changes():
-            return []
+            ChangedItemsResult([], None)
 
         # Fetch all changed items.
         all_changed_items = []
