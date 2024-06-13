@@ -38,6 +38,7 @@ GET_CUSTOMER_DELTAS = gql("""
                     dbId
                     mutationType
                 }
+                cursor
             }
             pageInfo {
                 hasNextPage

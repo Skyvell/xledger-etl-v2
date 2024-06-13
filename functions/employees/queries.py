@@ -108,6 +108,7 @@ GET_EMPLOYEE_DELTAS = gql("""
                     dbId
                     mutationType
                 }
+                cursor
             }
             pageInfo {
                 hasNextPage

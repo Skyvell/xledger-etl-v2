@@ -96,6 +96,7 @@ GET_TIMESHEET_DELTAS = gql("""
                     dbId
                     mutationType
                 }
+                cursor
             }
             pageInfo {
                 hasNextPage
