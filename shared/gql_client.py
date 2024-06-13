@@ -20,7 +20,6 @@ class PaginationQueryResult:
     """
     def __init__(self, edges: List[Dict[str, Any]]) -> None:
         self.edges = edges
-        self.last_cursor = edges[-1]['cursor'] if edges else None
 
     def get_nodes(self) -> List[Dict[str, Any]]:
         """
@@ -36,20 +35,10 @@ class PaginationQueryResult:
 
         :return: The cursor for the last item.
         """
-        return self.last_cursor
+        return self.edges[-1]['cursor'] if self.edges else None
     
-    def hasResults(self) -> bool:
+    def has_results(self) -> bool:
         return len(self.edges) > 0
-    
-    def add_key_to_all_nodes(self, key: str, value: Any) -> None:
-        """
-        Adds a key-value pair to all nodes in the result.
-
-        :param key: The key to add.
-        :param value: The value to add.
-        """
-        for node in self.get_nodes():
-            node[key] = value
 
 
 class GraphQLClient:
