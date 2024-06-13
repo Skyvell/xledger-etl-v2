@@ -1,4 +1,4 @@
-from gql_client import GraphQLClient, PaginationQueryResult
+from shared.gql_client import GraphQLClient, PaginationQueryResult
 from typing import Dict, Any
 import logging
 
@@ -53,11 +53,10 @@ class DeltaFetcher:
         updates = set()
         deletions = set()
 
-        edges = result.edges
-        if not edges:
-            return DeltasResult(additions, updates, deletions, result.last_cursor)
+        if not result.has_results():
+            return DeltasResult(additions, updates, deletions, result.get_last_cursor())
 
-        for edge in edges:
+        for edge in result.edges:
             node = edge['node']
             mutation_type = node.get('mutationType')
             db_id = node.get('dbId')
@@ -72,4 +71,4 @@ class DeltaFetcher:
         updates -= deletions
         additions -= deletions
 
-        return DeltasResult(additions, updates, deletions, result.last_cursor)
+        return DeltasResult(additions, updates, deletions, result.get_last_cursor())
